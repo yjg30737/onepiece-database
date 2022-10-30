@@ -31,7 +31,7 @@ class OnepieceSpider(scrapy.Spider):
                 data_labels = []
                 data_values = []
                 for item in data_items:
-                    data_labels.append(item.xpath("descendant::*[contains(@class, 'pi-data-label')]/text()").get())
+                    data_labels.append(item.xpath("(descendant::*[contains(@class, 'pi-data-label')]//text())[1]").get())
                     data_values.append(item.xpath("descendant::*[contains(@class, 'pi-data-value')]//text()[not(ancestor::sup)]").getall())
                 section_items = dict(zip([label.translate(str.maketrans('', '', string.punctuation)) for label in data_labels], [''.join(value) for value in data_values]))  
                 section_data[section_name] = section_items

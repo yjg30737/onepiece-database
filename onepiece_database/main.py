@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSiz
 
 from logWidget import LogDialog
 
-from sqlalchemy import create_engine
 
 class MainWindow(QWidget):
     def __init__(self):
