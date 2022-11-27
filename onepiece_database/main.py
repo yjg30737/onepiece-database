@@ -45,11 +45,14 @@ class AlignDelegate(QStyledItemDelegate):
 class Window(QWidget):
     def __init__(self):
         super().__init__()
+        self.__initVal()
         self.__initUi()
 
-    def __initUi(self):
+    def __initVal(self):
+        self.__column_names = []
         self.__tableName = "onepiece"
 
+    def __initUi(self):
         self.setWindowTitle('Database')
 
         btn = QPushButton('Get Characters Info')
@@ -161,13 +164,13 @@ class Window(QWidget):
         df = pd.DataFrame(result_info, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
 
         # [1:] for not include index
-        column_names = [' '.join(map(lambda chunk: chunk.capitalize(), columns_name.split('_')))
+        self.__column_names = [' '.join(map(lambda chunk: chunk.capitalize(), columns_name.split('_')))
                        for columns_name in [col['name']
                        for col in df.iloc]][1:]
 
         # set columns' name
-        for i in range(len(column_names)):
-            self.__model.setHeaderData(i, Qt.Horizontal, column_names[i])
+        for i in range(len(self.__column_names)):
+            self.__model.setHeaderData(i, Qt.Horizontal, self.__column_names[i])
 
         # remove index column which doesn't need to show
         self.__model.removeColumn(0)
@@ -183,10 +186,8 @@ class Window(QWidget):
         # set current index as first record
         self.__tableView.setCurrentIndex(self.__tableView.model().index(0, 0))
 
-        # set selection/resize policy
-        self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # resize columns
         self.__tableView.resizeColumnsToContents()
-        self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def __getData(self):
         reply = self.__crawlData()
