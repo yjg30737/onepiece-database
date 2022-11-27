@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSiz
     QWidget, QVBoxLayout, QDialog
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
-from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
+from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate, QHeaderView
 
 from logWidget import LogDialog
 
@@ -41,6 +41,7 @@ class AlignDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignCenter
+
 
 class Window(QWidget):
     def __init__(self):
@@ -74,14 +75,13 @@ class Window(QWidget):
         self.__tableView = QTableView()
         self.__tableView.setModel(self.__proxyModel)
 
+        # hide vertical header
+        self.__tableView.verticalHeader().setVisible(False)
+
         # set selection/resize policy
         self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__tableView.resizeColumnsToContents()
         self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        # sort (ascending order based on first column by default)
-        self.__tableView.setSortingEnabled(True)
-        self.__tableView.sortByColumn(0, Qt.AscendingOrder)
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
@@ -167,7 +167,7 @@ class Window(QWidget):
                        for columns_name in [col['name']
                        for col in table_info_df.iloc]][1:]
 
-        # set columns' name
+        # set columns' name as horizontal header
         for i in range(len(self.__column_names)):
             self.__model.setHeaderData(i, Qt.Horizontal, self.__column_names[i])
 
@@ -179,17 +179,15 @@ class Window(QWidget):
 
         # get official english name to set as vertical header
         statistics_official_english_names = \
-            cur.execute(f'SELECT statistics_official_english_name FROM {self.__tableName}').fetchall()
-        # statistics_official_english_names_df = \
-        #     pd.DataFrame(statistics_official_english_names, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
+            cur.execute(f'SELECT statistics_romanized_name FROM {self.__tableName}').fetchall()
 
-        # sort the table in ascending alphabetical order of statistics_official_english_name field by default
+        # sort the table in ascending alphabetical order of statistics_romanized_name field by default
         # this is basically Qt way to execute the query with clause below
-        # "ORDER BY statistics_official_english_name ASC"
-        self.__tableView.sortByColumn(self.__model.fieldIndex('statistics_official_english_name'), Qt.AscendingOrder)
-        print(statistics_official_english_names)
+        # "ORDER BY statistics_romanized_name ASC"
+        self.__tableView.sortByColumn(self.__model.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
 
-        # self.__tableView.setVerticalHeader(self.__statistics_official_english_names)
+        vertical_header = list(map(lambda x: x[0], statistics_official_english_names))
+        print(vertical_header)
 
         # align to center
         delegate = AlignDelegate()
