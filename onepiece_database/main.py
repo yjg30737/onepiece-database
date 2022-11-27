@@ -9,16 +9,17 @@ from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSiz
     QWidget, QVBoxLayout, QDialog
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
-from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate, QHeaderView
+from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
 
 from logWidget import LogDialog
 
-class SqlTableModel(QSqlTableModel):
 
+class SqlTableModel(QSqlTableModel):
     def flags(self, index: Union[QModelIndex, QPersistentModelIndex]) -> Qt.ItemFlags:
         if index.column() == 0:
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return super().flags(index)
+
 
 # for search feature
 class FilterProxyModel(QSortFilterProxyModel):
@@ -75,13 +76,16 @@ class Window(QWidget):
         self.__tableView = QTableView()
         self.__tableView.setModel(self.__proxyModel)
 
-        # hide vertical header
-        self.__tableView.verticalHeader().setVisible(False)
-
         # set selection/resize policy
         self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__tableView.resizeColumnsToContents()
         self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        # set sorting enabled
+        self.__tableView.setSortingEnabled(True)
+
+        # hide vertical header
+        self.__tableView.verticalHeader().hide()
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
@@ -154,7 +158,6 @@ class Window(QWidget):
     def __showDatabase(self):
         self.__model = SqlTableModel(self)
         self.__model.setTable(self.__tableName)
-        self.__model.select()
 
         # get columns' name and convert them into usual capitalized words
         conn = sqlite3.connect('data.sqlite')
@@ -187,12 +190,17 @@ class Window(QWidget):
         self.__tableView.sortByColumn(self.__model.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
 
         vertical_header = list(map(lambda x: x[0], statistics_official_english_names))
-        print(vertical_header)
+
+        # set columns' name as vertical header (which doesn't work for some stupid reasons)
+        for i in range(len(vertical_header)):
+            self.__model.setHeaderData(i, Qt.Vertical, vertical_header[i])
 
         # align to center
         delegate = AlignDelegate()
         for i in range(self.__model.columnCount()):
             self.__tableView.setItemDelegateForColumn(i, delegate)
+
+        self.__model.select()
 
         # set current index as first record
         self.__tableView.setCurrentIndex(self.__tableView.model().index(0, 0))
