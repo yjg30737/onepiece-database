@@ -8,7 +8,7 @@ import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
     QWidget, QVBoxLayout, QDialog
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
-from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
+from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
 
 from logWidget import LogDialog
@@ -153,6 +153,25 @@ class Window(QWidget):
         self.__model.setTable(self.__tableName)
         self.__model.select()
 
+        # get columns' name and convert them into usual capitalized words
+        conn = sqlite3.connect('data.sqlite')
+        cur = conn.cursor()
+        result = cur.execute(f'PRAGMA table_info([{self.__tableName}])')
+        result_info = result.fetchall()
+        df = pd.DataFrame(result_info, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
+
+        # [1:] for not include index
+        column_names = [' '.join(map(lambda chunk: chunk.capitalize(), columns_name.split('_')))
+                       for columns_name in [col['name']
+                       for col in df.iloc]][1:]
+
+        # set columns' name
+        for i in range(len(column_names)):
+            self.__model.setHeaderData(i, Qt.Horizontal, column_names[i])
+
+        # remove index column which doesn't need to show
+        self.__model.removeColumn(0)
+
         # set the table model as source model to make it enable to feature sort and filter function
         self.__proxyModel.setSourceModel(self.__model)
 
@@ -163,6 +182,11 @@ class Window(QWidget):
 
         # set current index as first record
         self.__tableView.setCurrentIndex(self.__tableView.model().index(0, 0))
+
+        # set selection/resize policy
+        self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.__tableView.resizeColumnsToContents()
+        self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
     def __getData(self):
         reply = self.__crawlData()

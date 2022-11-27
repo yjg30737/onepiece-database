@@ -11,5 +11,6 @@ setup(
     url='https://github.com/yjg30737/onepiece-database.git',
     install_requires=[
         'PyQt5',
+        'pandas'
     ]
 )
