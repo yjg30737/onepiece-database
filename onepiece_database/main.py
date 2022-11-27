@@ -74,12 +74,15 @@ class Window(QWidget):
         self.__tableView = QTableView()
         self.__tableView.setModel(self.__proxyModel)
 
+        # set vertical header invisible (doesn't need)
+        self.__tableView.verticalHeader().setVisible(False)
+
         # set selection/resize policy
         self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__tableView.resizeColumnsToContents()
         self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        # sort (ascending order by default)
+        # sort (ascending order based on first column by default)
         self.__tableView.setSortingEnabled(True)
         self.__tableView.sortByColumn(0, Qt.AscendingOrder)
 
