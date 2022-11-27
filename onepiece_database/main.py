@@ -74,9 +74,6 @@ class Window(QWidget):
         self.__tableView = QTableView()
         self.__tableView.setModel(self.__proxyModel)
 
-        # set vertical header invisible (doesn't need)
-        self.__tableView.verticalHeader().setVisible(False)
-
         # set selection/resize policy
         self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__tableView.resizeColumnsToContents()
@@ -162,14 +159,13 @@ class Window(QWidget):
         # get columns' name and convert them into usual capitalized words
         conn = sqlite3.connect('data.sqlite')
         cur = conn.cursor()
-        result = cur.execute(f'PRAGMA table_info([{self.__tableName}])')
-        result_info = result.fetchall()
-        df = pd.DataFrame(result_info, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
+        table_info_result = cur.execute(f'PRAGMA table_info([{self.__tableName}])').fetchall()
+        table_info_df = pd.DataFrame(table_info_result, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
 
         # [1:] for not include index
         self.__column_names = [' '.join(map(lambda chunk: chunk.capitalize(), columns_name.split('_')))
                        for columns_name in [col['name']
-                       for col in df.iloc]][1:]
+                       for col in table_info_df.iloc]][1:]
 
         # set columns' name
         for i in range(len(self.__column_names)):
@@ -180,6 +176,20 @@ class Window(QWidget):
 
         # set the table model as source model to make it enable to feature sort and filter function
         self.__proxyModel.setSourceModel(self.__model)
+
+        # get official english name to set as vertical header
+        statistics_official_english_names = \
+            cur.execute(f'SELECT statistics_official_english_name FROM {self.__tableName}').fetchall()
+        # statistics_official_english_names_df = \
+        #     pd.DataFrame(statistics_official_english_names, columns=['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'])
+
+        # sort the table in ascending alphabetical order of statistics_official_english_name field by default
+        # this is basically Qt way to execute the query with clause below
+        # "ORDER BY statistics_official_english_name ASC"
+        self.__tableView.sortByColumn(self.__model.fieldIndex('statistics_official_english_name'), Qt.AscendingOrder)
+        print(statistics_official_english_names)
+
+        # self.__tableView.setVerticalHeader(self.__statistics_official_english_names)
 
         # align to center
         delegate = AlignDelegate()
