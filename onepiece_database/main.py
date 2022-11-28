@@ -60,8 +60,11 @@ class Window(QWidget):
         btn = QPushButton('Get Characters Info')
         btn.clicked.connect(self.__getData)
 
+        self.__totalLbl = QLabel('Total: 0')
+
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Table'))
+        lay.addWidget(self.__totalLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(btn)
         lay.setContentsMargins(0, 0, 0, 0)
@@ -200,7 +203,12 @@ class Window(QWidget):
         for i in range(self.__model.columnCount()):
             self.__tableView.setItemDelegateForColumn(i, delegate)
 
+        # select and fetch every row
         self.__model.select()
+        while self.__model.canFetchMore():
+            self.__model.fetchMore()
+
+        self.__totalLbl.setText(f'Total: {self.__model.rowCount()}')
 
         # set current index as first record
         self.__tableView.setCurrentIndex(self.__tableView.model().index(0, 0))
