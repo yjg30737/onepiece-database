@@ -6,7 +6,9 @@ Using scrapy to crawl the WIKI page data
 This is the GUI version of <a href="https://github.com/yjg30737/one-piece-character-data-scraper">one-piece-character-data-scraper</a>, this uses it as a submodule.
 
 ## Requirements
-Read the requirements.txt. Aside from PyQt5 and pandas, all of the requirements are from one-piece-character-data-scraper.
+* PyQt5 (for GUI)
+* pandas (for converting)
+* Scrapy (for getting the data from the site)
 
 ## How to Install
 1. git clone ~
