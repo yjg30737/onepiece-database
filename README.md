@@ -14,9 +14,9 @@ You can see what kind of info this get in the link above. Such as character name
 
 ## How to Install
 1. git clone ~
-2. pip install -r requirements.txt
+2. python -m pip install -r requirements.txt
 3. go into the onepiece_database directory
-4. python main.py (py main.py if you use a version of Python above 3.11)
+4. python main.py
 
 ## Preview
 
