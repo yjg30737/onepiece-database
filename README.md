@@ -11,6 +11,7 @@ You can see what kind of info this get in the link above. Such as character name
 * PyQt5 (for GUI)
 * pandas (for converting)
 * Scrapy (for getting the data from the site)
+* psutil (for getting the process id to show the log)
 
 ## How to Install
 1. git clone ~
