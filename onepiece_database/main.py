@@ -16,9 +16,7 @@ from logWidget import LogDialog
 
 class SqlTableModel(QSqlTableModel):
     def flags(self, index: Union[QModelIndex, QPersistentModelIndex]) -> Qt.ItemFlags:
-        if index.column() == 0:
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-        return super().flags(index)
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
 
 # for search feature
