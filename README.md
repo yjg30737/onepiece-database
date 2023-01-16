@@ -5,6 +5,8 @@ Using scrapy to crawl the WIKI page data
 
 This is the GUI version of <a href="https://github.com/yjg30737/one-piece-character-data-scraper">one-piece-character-data-scraper</a>, this uses it as a submodule.
 
+You can see what kind of info this get in the link above. Such as character name, height..
+
 ## Requirements
 * PyQt5 (for GUI)
 * pandas (for converting)
@@ -28,5 +30,4 @@ New dialog will show up to process the getting characters' info from the pages, 
 
 Result
 
-![image](https://user-images.githubusercontent.com/55078043/212575088-d7c441fc-5cbb-4af5-9e4e-a3ef0eb30e45.png)
-
+![image](https://user-images.githubusercontent.com/55078043/212575088-d7c441fc-5cbb-4af5-9e4e-a3ef0eb30e45.png) 
