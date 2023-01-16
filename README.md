@@ -7,6 +7,8 @@ This is the GUI version of <a href="https://github.com/yjg30737/one-piece-charac
 
 You can see what kind of info this get in the link above. Such as character name, height..
 
+Also you are able to sort the data as well.
+
 ## Requirements
 * PyQt5 (for GUI)
 * pandas (for converting)
