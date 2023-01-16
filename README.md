@@ -1,5 +1,5 @@
 # onepiece-database
-Get the One Piece characters info with one click from ONE PIECE WIKI(FANDOM)
+Get the One Piece characters info with one click from <a href="https://onepiece.fandom.com/wiki/One_Piece_Wiki">ONE PIECE WIKI(FANDOM)</a>
 
 Using scrapy to crawl the WIKI page data
 
@@ -20,7 +20,7 @@ First screen, press the "get characters info" button
 
 ![image](https://user-images.githubusercontent.com/55078043/212575373-6ea962d1-af92-42ae-a4a8-6326d505c9cf.png)
 
-Wait to get the data by crawler
+New dialog will show up to process the getting characters' info from the pages, wait till it finished
 
 ![image](https://user-images.githubusercontent.com/55078043/212575322-ebbc6de3-29a7-483d-bf6f-e9d848d4ff79.png)
 
