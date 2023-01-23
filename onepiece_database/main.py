@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog
+    QWidget, QVBoxLayout, QDialog, QFileDialog
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
@@ -51,12 +51,20 @@ class Window(QWidget):
     def __initVal(self):
         self.__column_names = []
         self.__tableName = "onepiece"
+        # for saving data frame to export
+        self.__df = ''
 
     def __initUi(self):
         self.setWindowTitle('Database')
 
-        btn = QPushButton('Get Characters Info')
-        btn.clicked.connect(self.__getData)
+        crawlBtn = QPushButton('Get Characters Info')
+        crawlBtn.clicked.connect(self.__getData)
+
+        self.__exportExcelBtn = QPushButton('Export as Excel')
+        self.__exportExcelBtn.clicked.connect(self.__exportExcel)
+
+        # before data filled in the tableview
+        self.__exportExcelBtn.setEnabled(False)
 
         self.__totalLbl = QLabel('Total: 0')
 
@@ -64,7 +72,8 @@ class Window(QWidget):
         lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__totalLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
-        lay.addWidget(btn)
+        lay.addWidget(self.__exportExcelBtn)
+        lay.addWidget(crawlBtn)
         lay.setContentsMargins(0, 0, 0, 0)
 
         topWidget = QWidget()
@@ -97,6 +106,7 @@ class Window(QWidget):
     def __crawlData(self):
         logDialog = LogDialog()
         logDialog.setWindowTitle('Crawling...')
+        os.chdir(os.path.dirname(__file__))
         # check data.json exists
         os.chdir('./one-piece-character-data-scraper')
         if os.path.exists('data.json'):
@@ -131,6 +141,7 @@ class Window(QWidget):
 
             # Create A DataFrame From the JSON Data
             df = pd.DataFrame(new_lst)
+            self.__df = df
 
             conn = sqlite3.connect('data.sqlite')
             c = conn.cursor()
@@ -214,6 +225,9 @@ class Window(QWidget):
         # resize columns
         self.__tableView.resizeColumnsToContents()
 
+        # after data filled in the tableview
+        self.__exportExcelBtn.setEnabled(True)
+
     def __getData(self):
         reply = self.__crawlData()
         # finish to crawl successfully
@@ -229,6 +243,12 @@ class Window(QWidget):
         else:
             pass
 
+    def __exportExcel(self):
+        filename = QFileDialog.getSaveFileName(self, 'Save', os.path.expanduser('~'), 'Excel File (*.xlsx);;')
+        if filename[0]:
+            filename = filename[0]
+            self.__df.to_excel(filename, index=False, header=False)
+            os.startfile(os.path.dirname(filename))
 
 
 if __name__ == '__main__':
