@@ -55,7 +55,7 @@ class Window(QWidget):
         self.__df = ''
 
     def __initUi(self):
-        self.setWindowTitle('Database')
+        self.setWindowTitle('One Piece Database')
 
         crawlBtn = QPushButton('Get Characters Info')
         crawlBtn.clicked.connect(self.__getData)
@@ -247,7 +247,11 @@ class Window(QWidget):
         filename = QFileDialog.getSaveFileName(self, 'Save', os.path.expanduser('~'), 'Excel File (*.xlsx);;')
         if filename[0]:
             filename = filename[0]
-            self.__df.to_excel(filename, index=False, header=False)
+
+            excel_df = self.__df.copy()
+            excel_df.columns = self.__column_names
+
+            excel_df.to_excel(filename, index=False, header=True)
             os.startfile(os.path.dirname(filename))
 
 
