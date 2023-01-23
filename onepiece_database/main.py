@@ -60,11 +60,11 @@ class Window(QWidget):
         crawlBtn = QPushButton('Get Characters Info')
         crawlBtn.clicked.connect(self.__getData)
 
-        self.__exportExcelBtn = QPushButton('Export as Excel')
-        self.__exportExcelBtn.clicked.connect(self.__exportExcel)
+        self.__exportBtn = QPushButton('Export')
+        self.__exportBtn.clicked.connect(self.__export)
 
         # before data filled in the tableview
-        self.__exportExcelBtn.setEnabled(False)
+        self.__exportBtn.setEnabled(False)
 
         self.__totalLbl = QLabel('Total: 0')
 
@@ -72,7 +72,7 @@ class Window(QWidget):
         lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__totalLbl)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
-        lay.addWidget(self.__exportExcelBtn)
+        lay.addWidget(self.__exportBtn)
         lay.addWidget(crawlBtn)
         lay.setContentsMargins(0, 0, 0, 0)
 
@@ -226,7 +226,7 @@ class Window(QWidget):
         self.__tableView.resizeColumnsToContents()
 
         # after data filled in the tableview
-        self.__exportExcelBtn.setEnabled(True)
+        self.__exportBtn.setEnabled(True)
 
     def __getData(self):
         reply = self.__crawlData()
@@ -243,15 +243,18 @@ class Window(QWidget):
         else:
             pass
 
-    def __exportExcel(self):
-        filename = QFileDialog.getSaveFileName(self, 'Save', os.path.expanduser('~'), 'Excel File (*.xlsx);;')
+    def __export(self):
+        filename = QFileDialog.getSaveFileName(self, 'Save', os.path.expanduser('~'), 'Excel File (*.xlsx);;CSV file (*.csv)')
         if filename[0]:
             filename = filename[0]
-
-            excel_df = self.__df.copy()
-            excel_df.columns = self.__column_names
-
-            excel_df.to_excel(filename, index=False, header=True)
+            file_extension = os.path.splitext(filename)[-1]
+            df_copy = self.__df.copy()
+            if file_extension == '.xlsx':
+                df_copy.columns = self.__column_names
+                df_copy.to_excel(filename, index=False, header=True)
+            elif file_extension == '.csv':
+                df_copy.to_csv(filename, index=False, encoding='utf-16')
+            # todo database (sqlite, mysql)
             os.startfile(os.path.dirname(filename))
 
 
