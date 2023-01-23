@@ -3,7 +3,7 @@ Get the One Piece characters info with one click from <a href="https://onepiece.
 
 Using scrapy to crawl the WIKI page data
 
-This is the GUI version of <a href="https://github.com/yjg30737/one-piece-character-data-scraper">one-piece-character-data-scraper</a>, this uses it as a submodule.
+This is the PyQt GUI version of <a href="https://github.com/yjg30737/one-piece-character-data-scraper">one-piece-character-data-scraper</a>, this uses it as a submodule.
 
 You can see what kind of info this get in the link above. Such as character name, height..
 
