@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter
+    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
@@ -68,9 +68,13 @@ class Window(QWidget):
 
         self.__totalLbl = QLabel('Total: 0')
 
+        self.__headerComboBox = QComboBox()
+        self.__headerComboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__totalLbl)
+        lay.addWidget(self.__headerComboBox)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(self.__exportBtn)
         lay.addWidget(crawlBtn)
@@ -196,6 +200,7 @@ class Window(QWidget):
         # set columns' name as horizontal header
         for i in range(len(self.__column_names)):
             self.__model.setHeaderData(i, Qt.Horizontal, self.__column_names[i])
+        self.__headerComboBox.addItems(self.__column_names)
 
         # remove index column which doesn't need to show
         self.__model.removeColumn(0)
