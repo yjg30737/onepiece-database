@@ -6,9 +6,9 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox
+    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QTableWidgetItem
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
-from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
+from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
 
 from logWidget import LogDialog
@@ -68,8 +68,11 @@ class Window(QWidget):
 
         self.__totalLbl = QLabel('Total: 0')
 
+        # init the combo box
         self.__headerComboBox = QComboBox()
         self.__headerComboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        # set the header table view based on current index of combo box
+        self.__headerComboBox.currentIndexChanged.connect(self.__setCurrentItemOfHeaderView)
 
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Table'))
@@ -83,14 +86,24 @@ class Window(QWidget):
         topWidget = QWidget()
         topWidget.setLayout(lay)
 
-        # init the proxy model
-        self.__proxyModel = FilterProxyModel()
+        # init the header proxy model
+        self.__headerProxyModel = FilterProxyModel()
+        # init the data proxy model
+        self.__dataProxyModel = FilterProxyModel()
 
+        # set up the header view
         self.__headerTableView = QTableView()
+        self.__headerTableView.setModel(self.__dataProxyModel)
 
-        # set up the view
+        # set sorting enabled
+        self.__headerTableView.setSortingEnabled(True)
+
+        # hide vertical header
+        self.__headerTableView.verticalHeader().hide()
+
+        # set up the data view
         self.__dataTableView = QTableView()
-        self.__dataTableView.setModel(self.__proxyModel)
+        self.__dataTableView.setModel(self.__dataProxyModel)
 
         # set selection/resize policy
         self.__dataTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -183,8 +196,9 @@ class Window(QWidget):
         return True
 
     def __showDatabase(self):
-        self.__model = SqlTableModel(self)
-        self.__model.setTable(self.__tableName)
+        # data model
+        self.__dataModel = SqlTableModel(self)
+        self.__dataModel.setTable(self.__tableName)
 
         # get columns' name and convert them into usual capitalized words
         conn = sqlite3.connect('data.sqlite')
@@ -199,14 +213,20 @@ class Window(QWidget):
 
         # set columns' name as horizontal header
         for i in range(len(self.__column_names)):
-            self.__model.setHeaderData(i, Qt.Horizontal, self.__column_names[i])
+            self.__dataModel.setHeaderData(i, Qt.Horizontal, self.__column_names[i])
+
+        # add the columns in the combo box
         self.__headerComboBox.addItems(self.__column_names)
 
         # remove index column which doesn't need to show
-        self.__model.removeColumn(0)
+        self.__dataModel.removeColumn(0)
 
-        # set the table model as source model to make it enable to feature sort and filter function
-        self.__proxyModel.setSourceModel(self.__model)
+        # set the data table model as source data model to make it enable to feature sort and filter function
+        self.__dataProxyModel.setSourceModel(self.__dataModel)
+
+        # hide the columns after the source being set
+        for i in range(1, self.__dataModel.columnCount()):
+            self.__headerTableView.hideColumn(i)
 
         # get official english name to set as vertical header
         statistics_official_english_names = \
@@ -215,25 +235,25 @@ class Window(QWidget):
         # sort the table in ascending alphabetical order of statistics_romanized_name field by default
         # this is basically Qt way to execute the query with clause below
         # "ORDER BY statistics_romanized_name ASC"
-        self.__dataTableView.sortByColumn(self.__model.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
+        self.__dataTableView.sortByColumn(self.__dataModel.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
 
         vertical_header = list(map(lambda x: x[0], statistics_official_english_names))
 
         # set columns' name as vertical header (which doesn't work for some stupid reasons)
         for i in range(len(vertical_header)):
-            self.__model.setHeaderData(i, Qt.Vertical, vertical_header[i])
+            self.__dataModel.setHeaderData(i, Qt.Vertical, vertical_header[i])
 
         # align to center
         delegate = AlignDelegate()
-        for i in range(self.__model.columnCount()):
+        for i in range(self.__dataModel.columnCount()):
             self.__dataTableView.setItemDelegateForColumn(i, delegate)
 
         # select and fetch every row
-        self.__model.select()
-        while self.__model.canFetchMore():
-            self.__model.fetchMore()
+        self.__dataModel.select()
+        while self.__dataModel.canFetchMore():
+            self.__dataModel.fetchMore()
 
-        self.__totalLbl.setText(f'Total: {self.__model.rowCount()}')
+        self.__totalLbl.setText(f'Total: {self.__dataModel.rowCount()}')
 
         # set current index as first record
         self.__dataTableView.setCurrentIndex(self.__dataTableView.model().index(0, 0))
@@ -243,6 +263,11 @@ class Window(QWidget):
 
         # after data filled in the tableview
         self.__exportBtn.setEnabled(True)
+
+    def __setCurrentItemOfHeaderView(self, idx):
+        for row in range(self.__dataTableView.model().rowCount()):
+            item = self.__dataTableView.model().item(row, idx)
+            self.__headerTableView.setItem(row, 0, QTableWidgetItem(item.text()))
 
     def __getData(self):
         reply = self.__crawlData()
