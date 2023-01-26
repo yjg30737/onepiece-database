@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog, QFileDialog
+    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
@@ -82,24 +82,35 @@ class Window(QWidget):
         # init the proxy model
         self.__proxyModel = FilterProxyModel()
 
+        self.__headerTableView = QTableView()
+
         # set up the view
-        self.__tableView = QTableView()
-        self.__tableView.setModel(self.__proxyModel)
+        self.__dataTableView = QTableView()
+        self.__dataTableView.setModel(self.__proxyModel)
 
         # set selection/resize policy
-        self.__tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.__tableView.resizeColumnsToContents()
-        self.__tableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.__dataTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.__dataTableView.resizeColumnsToContents()
+        self.__dataTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         # set sorting enabled
-        self.__tableView.setSortingEnabled(True)
+        self.__dataTableView.setSortingEnabled(True)
 
         # hide vertical header
-        self.__tableView.verticalHeader().hide()
+        self.__dataTableView.verticalHeader().hide()
+
+        topWidget.setMaximumHeight(topWidget.sizeHint().height())
+
+        bottomWidget = QSplitter()
+        bottomWidget.addWidget(self.__headerTableView)
+        bottomWidget.addWidget(self.__dataTableView)
+        bottomWidget.setChildrenCollapsible(False)
+        bottomWidget.setHandleWidth(0)
+        bottomWidget.setSizes([250, 750])
 
         lay = QVBoxLayout()
         lay.addWidget(topWidget)
-        lay.addWidget(self.__tableView)
+        lay.addWidget(bottomWidget)
 
         self.setLayout(lay)
 
@@ -199,7 +210,7 @@ class Window(QWidget):
         # sort the table in ascending alphabetical order of statistics_romanized_name field by default
         # this is basically Qt way to execute the query with clause below
         # "ORDER BY statistics_romanized_name ASC"
-        self.__tableView.sortByColumn(self.__model.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
+        self.__dataTableView.sortByColumn(self.__model.fieldIndex('statistics_romanized_name'), Qt.AscendingOrder)
 
         vertical_header = list(map(lambda x: x[0], statistics_official_english_names))
 
@@ -210,7 +221,7 @@ class Window(QWidget):
         # align to center
         delegate = AlignDelegate()
         for i in range(self.__model.columnCount()):
-            self.__tableView.setItemDelegateForColumn(i, delegate)
+            self.__dataTableView.setItemDelegateForColumn(i, delegate)
 
         # select and fetch every row
         self.__model.select()
@@ -220,10 +231,10 @@ class Window(QWidget):
         self.__totalLbl.setText(f'Total: {self.__model.rowCount()}')
 
         # set current index as first record
-        self.__tableView.setCurrentIndex(self.__tableView.model().index(0, 0))
+        self.__dataTableView.setCurrentIndex(self.__dataTableView.model().index(0, 0))
 
         # resize columns
-        self.__tableView.resizeColumnsToContents()
+        self.__dataTableView.resizeColumnsToContents()
 
         # after data filled in the tableview
         self.__exportBtn.setEnabled(True)
