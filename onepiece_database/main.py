@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QTableWidgetItem
+    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
@@ -74,6 +74,7 @@ class Window(QWidget):
         # set the header table view based on current index of combo box
         self.__headerComboBox.currentIndexChanged.connect(self.__setCurrentItemOfHeaderView)
 
+        # init the top widget
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Table'))
         lay.addWidget(self.__totalLbl)
@@ -85,39 +86,30 @@ class Window(QWidget):
 
         topWidget = QWidget()
         topWidget.setLayout(lay)
+        topWidget.setMaximumHeight(topWidget.sizeHint().height())
 
         # init the header proxy model
         self.__headerProxyModel = FilterProxyModel()
         # init the data proxy model
         self.__dataProxyModel = FilterProxyModel()
 
-        # set up the header view
+        # init the header view
         self.__headerTableView = QTableView()
         self.__headerTableView.setModel(self.__dataProxyModel)
-
-        # set sorting enabled
+        self.__headerTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.__headerTableView.setSortingEnabled(True)
-
-        # hide vertical header
         self.__headerTableView.verticalHeader().hide()
 
         # set up the data view
         self.__dataTableView = QTableView()
         self.__dataTableView.setModel(self.__dataProxyModel)
-
-        # set selection/resize policy
         self.__dataTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.__dataTableView.resizeColumnsToContents()
         self.__dataTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        # set sorting enabled
         self.__dataTableView.setSortingEnabled(True)
-
-        # hide vertical header
         self.__dataTableView.verticalHeader().hide()
 
-        topWidget.setMaximumHeight(topWidget.sizeHint().height())
-
+        # init the bottom widget
         bottomWidget = QSplitter()
         bottomWidget.addWidget(self.__headerTableView)
         bottomWidget.addWidget(self.__dataTableView)
@@ -246,6 +238,7 @@ class Window(QWidget):
         # align to center
         delegate = AlignDelegate()
         for i in range(self.__dataModel.columnCount()):
+            self.__headerTableView.setItemDelegateForColumn(i, delegate)
             self.__dataTableView.setItemDelegateForColumn(i, delegate)
 
         # select and fetch every row
@@ -265,9 +258,11 @@ class Window(QWidget):
         self.__exportBtn.setEnabled(True)
 
     def __setCurrentItemOfHeaderView(self, idx):
-        for row in range(self.__dataTableView.model().rowCount()):
-            item = self.__dataTableView.model().item(row, idx)
-            self.__headerTableView.setItem(row, 0, QTableWidgetItem(item.text()))
+        for c in range(self.__headerTableView.colorCount()):
+            if c == idx:
+                self.__headerTableView.showColumn(c)
+            else:
+                self.__headerTableView.hideColumn(c)
 
     def __getData(self):
         reply = self.__crawlData()
