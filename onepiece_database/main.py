@@ -48,23 +48,8 @@ class InstantSearchBar(QWidget):
 
         self.setAutoFillBackground(True)
 
-        lay = QHBoxLayout()
+        lay = QGridLayout()
         lay.addWidget(self.__searchBar)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.setSpacing(2)
-
-        self._topWidget = QWidget()
-        self._topWidget.setLayout(lay)
-
-        lay = QGridLayout()
-        lay.addWidget(self._topWidget)
-
-        searchWidget = QWidget()
-        searchWidget.setLayout(lay)
-        lay.setContentsMargins(0, 0, 0, 0)
-
-        lay = QGridLayout()
-        lay.addWidget(searchWidget)
         lay.setContentsMargins(0, 0, 0, 0)
 
         self.__setStyle()
@@ -91,8 +76,8 @@ class InstantSearchBar(QWidget):
                 border: none;
             }
         ''')
-        self.__searchBar.setStyleSheet('QWidget { border: 1px solid gray; }')
-        self.setStyleSheet('QWidget { padding: 5px; }')
+        self.__searchBar.setStyleSheet('QWidget#searchBar { border: 1px solid gray; }')
+        # self.setStyleSheet('QWidget { padding: 5px; }')
 
     def __searched(self, text):
         self.searched.emit(text)
