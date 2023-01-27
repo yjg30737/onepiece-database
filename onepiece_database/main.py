@@ -6,7 +6,7 @@ from typing import Union
 
 import pandas as pd
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
-    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QHeaderView
+    QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QHeaderView, QCheckBox
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QAbstractItemView, QTableView, QStyledItemDelegate
@@ -82,6 +82,10 @@ class Window(QWidget):
         self.__searchComboBox = QComboBox()
         self.__searchComboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
 
+        self.__synchronizeScrollCheckBox = QCheckBox()
+        self.__synchronizeScrollCheckBox.setText('Synchronize Scroll (Beta)')
+        self.__synchronizeScrollCheckBox.stateChanged.connect(self.__synchronizeScroll)
+
         # init the top widget
         lay = QHBoxLayout()
         lay.addWidget(QLabel('Data'))
@@ -89,6 +93,7 @@ class Window(QWidget):
         lay.addWidget(self.__headerComboBox)
         lay.addWidget(self.__searchBar)
         lay.addWidget(self.__searchComboBox)
+        lay.addWidget(self.__synchronizeScrollCheckBox)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(self.__exportBtn)
         lay.addWidget(crawlBtn)
@@ -315,6 +320,12 @@ class Window(QWidget):
         self.__dataProxyModel.setFilterKeyColumn(self.__searchComboBox.currentIndex() - 1)
         # regular expression can be used
         self.__dataProxyModel.setFilterRegularExpression(text)
+
+    def __synchronizeScroll(self, state):
+        if state == Qt.Checked:
+            self.__headerTableView.verticalScrollBar().valueChanged.connect(self.__dataTableView.verticalScrollBar().setValue)
+        else:
+            self.__headerTableView.verticalScrollBar().valueChanged.disconnect()
 
 
 if __name__ == '__main__':
