@@ -25,9 +25,9 @@ class InstantSearchBar(QWidget):
         # search bar label
         self.__label = QLabel()
 
-        self._initUi()
+        self.__initUi()
 
-    def _initUi(self):
+    def __initUi(self):
         self.__searchLineEdit = QLineEdit()
         self.__searchIconLbl = QLabel()
         ps = QApplication.font().pointSize()
@@ -97,6 +97,7 @@ class InstantSearchBar(QWidget):
     def showEvent(self, e):
         self.__searchLineEdit.setFocus()
 
+
 class SqlTableModel(QSqlTableModel):
     def flags(self, index: Union[QModelIndex, QPersistentModelIndex]) -> Qt.ItemFlags:
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -159,6 +160,11 @@ class Window(QWidget):
 
         self.__searchBar = InstantSearchBar()
         self.__searchBar.setPlaceHolder('Search...')
+        self.__searchBar.searched.connect(self.__showResult)
+
+        self.__searchComboBox = QComboBox()
+        # set the header table view based on current index of combo box
+        self.__headerComboBox.currentIndexChanged.connect(self.__setCurrentItemOfHeaderView)
 
         # init the top widget
         lay = QHBoxLayout()
@@ -166,6 +172,7 @@ class Window(QWidget):
         lay.addWidget(self.__totalLbl)
         lay.addWidget(self.__headerComboBox)
         lay.addWidget(self.__searchBar)
+        lay.addWidget(self.__searchComboBox)
         lay.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.MinimumExpanding))
         lay.addWidget(self.__exportBtn)
         lay.addWidget(crawlBtn)
@@ -209,6 +216,10 @@ class Window(QWidget):
         lay.addWidget(bottomWidget)
 
         self.setLayout(lay)
+
+        # search feature
+        # show default result (which means "show all")
+        self.__showResult('')
 
     def __crawlData(self):
         logDialog = LogDialog()
@@ -296,6 +307,8 @@ class Window(QWidget):
 
         # add the columns in the combo box
         self.__headerComboBox.addItems(self.__column_names)
+        self.__searchComboBox.addItems(['All'] + self.__column_names)
+        self.__searchComboBox.setCurrentIndex(0)
 
         # remove index column which doesn't need to show
         self.__dataModel.removeColumn(0)
@@ -379,6 +392,13 @@ class Window(QWidget):
                 df_copy.to_csv(filename, index=False, encoding='utf-16')
             # todo database (sqlite, mysql)
             os.startfile(os.path.dirname(filename))
+
+    def __showResult(self, text):
+        # index -1 will be read from all columns
+        # otherwise it will be read the current column number indicated by combobox
+        self.__dataProxyModel.setFilterKeyColumn(self.__searchComboBox.currentIndex() - 1)
+        # regular expression can be used
+        self.__dataProxyModel.setFilterRegularExpression(text)
 
 
 if __name__ == '__main__':
