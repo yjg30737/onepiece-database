@@ -114,6 +114,7 @@ class Window(QWidget):
         self.__headerTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.__headerTableView.setSortingEnabled(True)
         self.__headerTableView.verticalHeader().hide()
+        self.__headerTableView.activated.connect(self.__setItemFocus)
 
         # set up the data view
         self.__dataTableView = QTableView()
@@ -123,6 +124,7 @@ class Window(QWidget):
         self.__dataTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.__dataTableView.setSortingEnabled(True)
         self.__dataTableView.verticalHeader().hide()
+        self.__dataTableView.activated.connect(self.__setItemFocus)
 
         # init the bottom widget
         bottomWidget = QSplitter()
@@ -326,6 +328,10 @@ class Window(QWidget):
             self.__headerTableView.verticalScrollBar().valueChanged.connect(self.__dataTableView.verticalScrollBar().setValue)
         else:
             self.__headerTableView.verticalScrollBar().valueChanged.disconnect()
+
+    def __setItemFocus(self, idx):
+        self.__headerTableView.setCurrentIndex(idx)
+        self.__dataTableView.setCurrentIndex(idx)
 
 
 if __name__ == '__main__':
