@@ -1,10 +1,12 @@
 import json
 import os
+import posixpath
 import sqlite3
 from collections import defaultdict
 from typing import Union
 
 import pandas as pd
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QSpacerItem, QSizePolicy, QPushButton, \
     QWidget, QVBoxLayout, QDialog, QFileDialog, QSplitter, QComboBox, QHeaderView, QCheckBox
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, QModelIndex, QPersistentModelIndex
@@ -57,6 +59,8 @@ class Window(QWidget):
 
     def __initUi(self):
         self.setWindowTitle('One Piece Database')
+        cur_filename = os.path.join(os.path.dirname(__file__), 'ico/logo.png').replace(os.path.sep, posixpath.sep)
+        self.setWindowIcon(QIcon(cur_filename))
 
         crawlBtn = QPushButton('Get Characters Info')
         crawlBtn.clicked.connect(self.__getData)
@@ -83,7 +87,7 @@ class Window(QWidget):
         self.__searchComboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
 
         self.__synchronizeScrollCheckBox = QCheckBox()
-        self.__synchronizeScrollCheckBox.setText('Synchronize Scroll (Beta)')
+        self.__synchronizeScrollCheckBox.setText('Synchronize Scroll')
         self.__synchronizeScrollCheckBox.stateChanged.connect(self.__synchronizeScroll)
 
         # init the top widget
@@ -326,8 +330,10 @@ class Window(QWidget):
     def __synchronizeScroll(self, state):
         if state == Qt.Checked:
             self.__headerTableView.verticalScrollBar().valueChanged.connect(self.__dataTableView.verticalScrollBar().setValue)
+            self.__dataTableView.verticalScrollBar().valueChanged.connect(self.__headerTableView.verticalScrollBar().setValue)
         else:
-            self.__headerTableView.verticalScrollBar().valueChanged.disconnect()
+            self.__headerTableView.verticalScrollBar().valueChanged.disconnect(self.__dataTableView.verticalScrollBar().setValue)
+            self.__dataTableView.verticalScrollBar().valueChanged.disconnect(self.__headerTableView.verticalScrollBar().setValue)
 
     def __setItemFocus(self, idx):
         self.__headerTableView.setCurrentIndex(idx)
