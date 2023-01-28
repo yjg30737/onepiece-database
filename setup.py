@@ -3,7 +3,7 @@ from glob import glob
 
 setup(
     name='onepiece-database',
-    version='0.0.16',
+    version='0.0.17',
     author='Jung Gyu Yoon',
     author_email='yjg30737@gmail.com',
     license='MIT',
