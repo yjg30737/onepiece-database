@@ -1,9 +1,8 @@
 from setuptools import setup, find_packages
-from glob import glob
 
 setup(
     name='onepiece-database',
-    version='0.0.17',
+    version='0.0.18',
     author='Jung Gyu Yoon',
     author_email='yjg30737@gmail.com',
     license='MIT',
