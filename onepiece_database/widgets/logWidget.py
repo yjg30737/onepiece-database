@@ -66,6 +66,7 @@ class LogWidget(QWidget):
     def __initVal(self):
         self.__t = ''
         self.__tDeleted = False
+        self.__stopped_f = False
 
         # each text below are appended when process is started and finished (by default)
         # you can change the text with setStartText(start_text: str) and setFinishText(finish_text: str)
@@ -110,6 +111,7 @@ class LogWidget(QWidget):
         self.__t.updated.connect(self.__logAppend)
         self.__t.updated.connect(self.updated)
         self.__t.stopped.connect(self.stopped)
+        self.__t.stopped.connect(self.__setStopped)
         self.__t.stopped.connect(self.__appendStopText)
         self.__t.finished.connect(self.finished)
         self.__t.finished.connect(self.__appendFinishText)
@@ -118,6 +120,12 @@ class LogWidget(QWidget):
     def __stop(self):
         self.__pauseResumeBtn.setText('Pause')
         self.__t.stop()
+
+    def __setStopped(self):
+        self.__stopped_f = True
+
+    def isStopped(self):
+        return self.__stopped_f
 
     # append the text when process is started (one time)
     def __appendStartText(self):
@@ -169,24 +177,25 @@ class LogWidget(QWidget):
 
     def closeEvent(self, e):
         if isinstance(self.__t, QThread):
-            if self.__tDeleted:
+            # if self.__tDeleted:
+            #     e.accept()
+            # else:
+            self.__t.pause()
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle('Warning')
+            msgBox.setText('Do you want to stop the process?')
+            msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            reply = msgBox.exec()
+            if reply == QMessageBox.Yes:
+                self.__t.stop()
+                # give the time to stop the process
                 e.accept()
-            else:
-                self.__t.pause()
-                msgBox = QMessageBox()
-                msgBox.setWindowTitle('Warning')
-                msgBox.setText('Do you want to stop the process?')
-                msgBox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                reply = msgBox.exec()
-                if reply == QMessageBox.Yes:
-                    self.__t.stop()
-                    # give the time to stop the process
-                    e.accept()
-                elif reply == QMessageBox.No:
-                    self.__t.resume()
-                    e.ignore()
+            elif reply == QMessageBox.No:
+                self.__t.resume()
+                e.ignore()
         else:
             e.accept()
+
 
 class LogDialog(QDialog):
     def __init__(self):

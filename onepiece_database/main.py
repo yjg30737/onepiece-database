@@ -161,7 +161,10 @@ class Window(QWidget):
             logWidget = logDialog.getLogWidget()
             logWidget.setCommand(command)
             reply = logDialog.exec()
-            return reply
+            if logWidget.isStopped():
+                return QDialog.Rejected
+            else:
+                return reply
 
     def __getDatabase(self):
         try:
@@ -304,7 +307,8 @@ class Window(QWidget):
                 pass
         # fail to crawl
         else:
-            pass
+            if os.path.exists('data.json'):
+                os.remove('data.json')
 
     def __export(self):
         filename = QFileDialog.getSaveFileName(self, 'Save', os.path.expanduser('~'), 'Excel File (*.xlsx);;CSV file (*.csv)')
@@ -342,7 +346,7 @@ class Window(QWidget):
 
 if __name__ == '__main__':
     import sys
-
+    print(sys.executable)
     app = QApplication(sys.argv)
     window = Window()
     window.show()
