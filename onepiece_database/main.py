@@ -88,7 +88,6 @@ class Window(QWidget):
 
         self.__synchronizeScrollCheckBox = QCheckBox()
         self.__synchronizeScrollCheckBox.setText('Synchronize Scroll')
-        self.__synchronizeScrollCheckBox.stateChanged.connect(self.__synchronizeScroll)
 
         # init the top widget
         lay = QHBoxLayout()
@@ -129,6 +128,9 @@ class Window(QWidget):
         self.__dataTableView.setSortingEnabled(True)
         self.__dataTableView.verticalHeader().hide()
         self.__dataTableView.activated.connect(self.__setItemFocus)
+
+        self.__synchronizeScrollCheckBox.stateChanged.connect(self.__synchronizeScroll)
+        self.__synchronizeScrollCheckBox.setChecked(True)
 
         # init the bottom widget
         bottomWidget = QSplitter()
